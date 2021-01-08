@@ -1,3 +1,18 @@
+const isNumber = num => {
+  return !isNaN(+num) && Number.isInteger(+num);
+}
+
+const isNumberInRange = (maybeNum, min, max) => {
+  return isNumber(maybeNum) && (min <= +maybeNum && +maybeNum <= max);
+}
+
+const isNumberOfLength = (number, length) => {
+  if (isNumber(number) && isNumber(length)) {
+    return number.length === length;
+  }
+  return false;
+}
+
 class Passport {
   constructor(data) {
     this.data = data.replace(/\r?\n|\r/g, ' ').split(' ').map(d => d.split(':'));
@@ -56,8 +71,8 @@ class Passport {
   evalByr() {
     const { byr } = this.passportDetails;
 
-    const isInRange = this.isNumberInRange(byr, 1920, 2002);
-    const isLength = this.isNumberOfLength(byr, 4)
+    const isInRange = isNumberInRange(byr, 1920, 2002);
+    const isLength = isNumberOfLength(byr, 4)
 
     return !!byr && isInRange && isLength;
   }
@@ -65,8 +80,8 @@ class Passport {
   evalIyr() {
     const { iyr } = this.passportDetails;
 
-    const isInRange = this.isNumberInRange(iyr, 2010, 2020);
-    const isLength = this.isNumberOfLength(iyr, 4);
+    const isInRange = isNumberInRange(iyr, 2010, 2020);
+    const isLength = isNumberOfLength(iyr, 4);
 
     return !!iyr && isInRange && isLength;
   }
@@ -74,8 +89,8 @@ class Passport {
   evalEyr() {
     const { eyr } = this.passportDetails;
 
-    const isInRange = this.isNumberInRange(eyr, 2020, 2030);
-    const isLength = this.isNumberOfLength(eyr, 4);
+    const isInRange = isNumberInRange(eyr, 2020, 2030);
+    const isLength = isNumberOfLength(eyr, 4);
 
     return !!eyr && isInRange && isLength;
   }
@@ -92,11 +107,9 @@ class Passport {
     const { hcl } = this.passportDetails;
 
     if (hcl) {
-      const matches = hcl.match(/^\#[a-z0-9]*$/);
-      const replaced = hcl.replace('#', '');
-      const length = replaced.length;
+      const matches = hcl.match(/^#[0-9A-F]{6}$/i);
 
-      return !!hcl && !!matches && length === 6;
+      return !!hcl && !!matches;
     }
     return false;
   }
@@ -114,21 +127,6 @@ class Passport {
     return !!pid && !!pid.match(/^\d{9}$/);
   }
 
-  isNumber(num) {
-    return !isNaN(+num) && Number.isInteger(+num);
-  }
-
-  isNumberInRange(maybeNum, min, max) {
-    return this.isNumber(maybeNum) && (min <= +maybeNum && +maybeNum <= max);
-  }
-
-  isNumberOfLength(number, length) {
-    if (this.isNumber(number) && this.isNumber(length)) {
-      return number.length === length;
-    }
-    return false;
-  }
-
   getIsHeightValid(hgt) {
     if (hgt) {
       const split = hgt.match(/[\d\.]+|\D+/g);
@@ -137,9 +135,9 @@ class Passport {
         const [num, measure] = split;
   
         if (measure === 'cm') {
-          return this.isNumberInRange(num, 150, 193);
+          return isNumberInRange(num, 150, 193);
         } else if (measure === 'in') {
-          return this.isNumberInRange(num, 59, 76);
+          return isNumberInRange(num, 59, 76);
         }
       }
     }
