@@ -3,7 +3,7 @@ const fs = require('fs');
 const testData = fs.readFileSync('test.txt', { encoding: 'UTF-8'}).split('\n').filter(Boolean).map(d => [...d]);
 const allData = fs.readFileSync('data.txt', { encoding: 'UTF-8'}).split('\n').filter(Boolean).map(d => [...d]);
 
-const Traverse = require('../traverse.js');
+const Traverse = require('./traverse.js');
 
 const initComplexTraversal = (instance, coordinates) => {
   if (instance instanceof Traverse) {

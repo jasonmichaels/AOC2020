@@ -4,7 +4,7 @@ const testData = fs.readFileSync('test.txt', { encoding: 'UTF-8'}).split('\n\n')
 const allData = fs.readFileSync('data.txt', { encoding: 'UTF-8'}).split('\n\n').filter(Boolean);
 const joshText = fs.readFileSync('joshText.txt', { encoding: 'UTF-8'}).split('\n\n').filter(Boolean);
 
-const evaluateBatch = require('../Passport.js');
+const evaluateBatch = require('./Passport.js');
 
 console.log('PROCESSING TEST DATA WITH LENGTH: ', testData.length);
 console.time('TestBatch');
