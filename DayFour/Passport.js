@@ -15,7 +15,7 @@ const isNumberOfLength = (number, length) => {
 
 class Passport {
   constructor(data) {
-    this.data = data.replace(/\r?\n|\r/g, ' ').split(' ').map(d => d.split(':'));
+    this.data = 'string' === typeof data ? data.replace(/\r?\n|\r/g, ' ').split(' ').map(d => d.split(':')) : [];
     this.isPassportValid = false;
     this.passportDetails = {};
     this.complexDetails = {};
@@ -154,6 +154,9 @@ class Passport {
 }
 
 const evaludateBatch = (batch, complexValidation) => {
+  if (!Array.isArray(batch)) {
+    return new Error(`Batch must be an iterable, ${typeof batch} ${String(batch)} given.`);
+  }
   const results = [];
 
   for (const data of batch) {

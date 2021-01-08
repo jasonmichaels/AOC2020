@@ -10,3 +10,6 @@ console.log(testResults); // 2 valid
 
 const allResults = evaludateBatch(allData, true);
 console.log(allResults); // 175 valid
+
+const testingEmpty = evaludateBatch(5, true);
+console.log(testingEmpty);
