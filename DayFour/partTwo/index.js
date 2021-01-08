@@ -9,4 +9,4 @@ const testResults = evaludateBatch(testData);
 console.log(testResults); // 2 valid
 
 const allResults = evaludateBatch(allData, true);
-console.log(allResults); // 228 valid
+console.log(allResults); // 175 valid
