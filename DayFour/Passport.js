@@ -1,38 +1,31 @@
-const isNumber = num => {
-  return !isNaN(+num) && Number.isInteger(+num);
-}
+const utils = require('./utils.js');
 
-const isNumberInRange = (maybeNum, min, max) => {
-  return isNumber(maybeNum) && (min <= +maybeNum && +maybeNum <= max);
-}
+const {
+  evalByr,
+  evalIyr,
+  evalEyr,
+  evalHgt,
+  evalHcl,
+  evalEcl,
+  evalPid
+} = utils;
 
-const isNumberOfLength = (number, length) => {
-  if (isNumber(number) && isNumber(length)) {
-    return number.length === length;
-  }
-  return false;
-}
-
-class Passport {
-  constructor(data) {
+class PassportValidator {
+  constructor(data, complexValidation = false) {
     this.data = 'string' === typeof data ? data.replace(/\r?\n|\r/g, ' ').split(' ').map(d => d.split(':')) : [];
     this.isPassportValid = false;
     this.passportDetails = {};
-    this.complexDetails = {};
+
+    this.init(complexValidation);
   }
 
   init(strictValidation = false) {
-    this.setData(strictValidation);
-    return this.getIsValid();
-  }
-
-  setData(strictValidation) {
     this.setPassportDetails();
 
-    if (!strictValidation) {
-      this.setSimpleIsValid();
-    } else {
+    if (strictValidation) {
       this.setComplexIsValid();
+    } else {
+      this.setSimpleIsValid();
     }
   }
 
@@ -43,109 +36,38 @@ class Passport {
   }
 
   setSimpleIsValid() {
-    const { 
-      ecl, 
-      pid, 
-      eyr, 
-      hcl, 
-      byr, 
-      iyr, 
-      hgt 
-    } = this.getPassportDetails();
+    const {
+      ecl,
+      pid,
+      eyr,
+      hcl,
+      byr,
+      iyr,
+      hgt
+    } = this.passportDetails;
 
     this.isPassportValid = !!ecl && !!pid && !!eyr && !!hcl && !!byr && !!iyr && !!hgt;
   }
 
   setComplexIsValid() {
-    const isByrValid = this.evalByr();
-    const isIyrValid = this.evalIyr();
-    const isEyrValid = this.evalEyr();
-    const isHgtValid = this.evalHgt();
-    const isHclValid = this.evalHcl();
-    const isValidEcl = this.evalEcl();
-    const isPicValid = this.evalPid();
-    
+    const {
+      ecl,
+      pid,
+      eyr,
+      hcl,
+      byr,
+      iyr,
+      hgt
+    } = this.passportDetails;
+    const isByrValid = evalByr(byr);
+    const isIyrValid = evalIyr(iyr);
+    const isEyrValid = evalEyr(eyr);
+    const isHgtValid = evalHgt(hgt);
+    const isHclValid = evalHcl(hcl);
+    const isValidEcl = evalEcl(ecl);
+    const isPicValid = evalPid(pid);
+
     this.isPassportValid = isByrValid && isIyrValid && isEyrValid && isHgtValid && isHclValid && isValidEcl && isPicValid;
-  }
-
-  evalByr() {
-    const { byr } = this.passportDetails;
-
-    const isInRange = isNumberInRange(byr, 1920, 2002);
-    const isLength = isNumberOfLength(byr, 4)
-
-    return !!byr && isInRange && isLength;
-  }
-
-  evalIyr() {
-    const { iyr } = this.passportDetails;
-
-    const isInRange = isNumberInRange(iyr, 2010, 2020);
-    const isLength = isNumberOfLength(iyr, 4);
-
-    return !!iyr && isInRange && isLength;
-  }
-
-  evalEyr() {
-    const { eyr } = this.passportDetails;
-
-    const isInRange = isNumberInRange(eyr, 2020, 2030);
-    const isLength = isNumberOfLength(eyr, 4);
-
-    return !!eyr && isInRange && isLength;
-  }
-
-  evalHgt() {
-    const { hgt } = this.passportDetails;
-
-    const isValidHeight = !!hgt && this.getIsHeightValid(hgt);
-
-    return !!hgt && isValidHeight;
-  }
-
-  evalHcl() {
-    const { hcl } = this.passportDetails;
-
-    if (hcl) {
-      const matches = hcl.match(/^#[0-9A-F]{6}$/i);
-
-      return !!hcl && !!matches;
-    }
-    return false;
-  }
-
-  evalEcl() {
-    const { ecl } = this.passportDetails;
-    const colors = ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'];
-
-    return 'string' === typeof ecl && colors.includes(ecl);
-  }
-
-  evalPid() {
-    const { pid } = this.passportDetails;
-
-    return !!pid && !!pid.match(/^\d{9}$/);
-  }
-
-  getIsHeightValid(hgt) {
-    if (hgt) {
-      const split = hgt.match(/[\d\.]+|\D+/g);
-
-      if (split && Array.isArray(split) && split.length === 2) {
-        const [num, measure] = split;
-  
-        if (measure === 'cm') {
-          return isNumberInRange(num, 150, 193);
-        } else if (measure === 'in') {
-          return isNumberInRange(num, 59, 76);
-        }
-      }
-    }
-    return false;
-  }
-
-  getPassportDetails() {
-    return this.passportDetails;
   }
 
   getIsValid() {
@@ -153,19 +75,25 @@ class Passport {
   }
 }
 
-const evaludateBatch = (batch, complexValidation) => {
+const evaludateBatch = (batch, complexValidation = false) => {
   if (!Array.isArray(batch)) {
-    return new Error(`Batch must be an iterable, ${typeof batch} ${String(batch)} given.`);
+    return new Error(
+      `Batch must be an array [string, string, ...strings], ${typeof batch} ${String(batch)} given.`
+    );
   }
-  
+
   let results = [];
 
-  for (const data of batch) {
-    if ('string' !== typeof data) {
+  for (let i = 0; i < batch.length; i++) {
+    if ('string' !== typeof batch[i]) {
       results = results.splice(0, results.length);
-      return new Error(`Unable to process batch. Individual batch elements must of type string, Encountered ${typeof data} ${String(data)}.`);
+      throw new Error(
+        `Unable to process batch. Individual batch elements must of type string, Encountered ${typeof batch[i]} ${String(batch[i])}.`
+      );
     }
-    results.push(new Passport(data).init(complexValidation));
+
+    const instance = new PassportValidator(batch[i], complexValidation);
+    results.push(instance.getIsValid());
   }
 
   return results.filter(Boolean).length;
