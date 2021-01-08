@@ -5,16 +5,14 @@ const allData = fs.readFileSync('data.txt', { encoding: 'UTF-8'}).split('\n\n').
 
 const evaludateBatch = require('../Passport.js');
 
+console.log('PROCESSING TEST DATA WITH LENGTH: ', testData.length);
+console.time('TestBatch');
 const testResults = evaludateBatch(testData);
 console.log(testResults); // 2 valid
+console.timeEnd('TestBatch');
 
+console.log('PROCESSING DATA WITH LENGTH: ', allData.length);
+console.time('AllDataBatch');
 const allResults = evaludateBatch(allData, true);
 console.log(allResults); // 175 valid
-
-// Test various input type issues
-const emptyArray = evaludateBatch([]);
-console.log(emptyArray); // returns zero
-const testingWrongType = evaludateBatch(5, true); // error
-const testingArrayWithWeirdValues = evaludateBatch([null, 0, undefined]); // error
-console.log(testingWrongType);
-console.log(testingArrayWithWeirdValues);
+console.timeEnd('AllDataBatch');
