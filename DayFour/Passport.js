@@ -157,9 +157,14 @@ const evaludateBatch = (batch, complexValidation) => {
   if (!Array.isArray(batch)) {
     return new Error(`Batch must be an iterable, ${typeof batch} ${String(batch)} given.`);
   }
-  const results = [];
+  
+  let results = [];
 
   for (const data of batch) {
+    if ('string' !== typeof data) {
+      results = results.splice(0, results.length);
+      return new Error(`Unable to process batch. Individual batch elements must of type string, Encountered ${typeof data} ${String(data)}.`);
+    }
     results.push(new Passport(data).init(complexValidation));
   }
 
